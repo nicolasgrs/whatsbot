@@ -1,31 +1,31 @@
 {
     "home": {
-        "type": "class name",
-        "value": "landing-headerTitle"
+        "type": "xpath",
+        "value": "//div[contains(text(), 'Inicia sesión en WhatsApp Web')]"
     },
     "logged": {
         "type": "xpath",
-        "value": "//*[@data-testid='chatlist-header']"
+        "value": "//div[.//h1[text()='Chats']]"
     },
     "search": {
         "type": "xpath",
-        "value": "//*[@data-testid='chat-list-search']"
+        "value": "//button[@aria-label='Busca un chat o inicia uno nuevo.']"
     },
     "search_close": {
         "type": "xpath",
-        "value": "//*[@data-testid='x-alt']"
+        "value": "//*[@data-icon='x-alt']"
     },
     "contact": {
         "type": "xpath",
-        "value": "//*[@data-testid='chat-list']"
+        "value": "//div[@aria-label='Resultados de la búsqueda.'][@role='grid']"
     },
     "last_message": {
         "type": "xpath",
-        "value": "//*[@data-testid='conversation-panel-messages'][1]//*[contains(@role, 'row')][last()]//*[contains(@dir, 'ltr')][last()]"
+        "value": "//div[@role='listitem'][last()]//span[contains(@class, 'x1iyjqo2')][last()]"
     },
     "message_input": {
         "type": "xpath",
-        "value": "//*[@data-testid='conversation-compose-box-input'][1]"
+        "value": "//div[@contenteditable='true'][@aria-placeholder='Escribe un mensaje']"
     }
 
 }
