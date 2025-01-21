@@ -44,6 +44,7 @@ from typing import Any
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options
+from bs4 import BeautifulSoup
 
 
 class WhatsBot:
@@ -156,6 +157,68 @@ class WhatsBot:
         last_message = self.find_element("last_message")
         return str(last_message.text) if last_message else ''
     
+    def message_block(self) -> str:
+        """
+        Read all messages in the current message block and return structured information.
+
+        Returns:
+            str: All messages in the message block in structured format
+        """
+        message_block = self.find_element("message_block")
+        if not message_block:
+            return ''
+            
+        # Parse HTML content
+        soup = BeautifulSoup(message_block.get_attribute('innerHTML'), 'html.parser')
+        
+        # Find all message blocks
+        messages = soup.find_all('div', {'class': ['message-in', 'message-out']})
+        
+        structured_messages = []
+        
+        for msg in messages:
+            message_data = {
+                'id': '',
+                'timestamp': '',
+                'time': '',
+                'sender': '',
+                'message': '',
+                'type': 'in' if 'message-in' in msg.get('class', []) else 'out'
+            }
+            
+            # Get message ID from parent
+            parent = msg.find_parent(attrs={'data-id': True})
+            if parent:
+                message_data['id'] = parent.get('data-id', '')
+                
+            # Get timestamp and message content
+            copyable_text = msg.find('div', {'class': 'copyable-text'})
+            if copyable_text:
+                # Extract timestamp from data-pre-plain-text attribute
+                pre_text = copyable_text.get('data-pre-plain-text', '')
+                if pre_text:
+                    # Format example: "[18:43, 15/1/2025] Dan Radeand: "
+                    try:
+                        # Remove brackets and split by ']'
+                        timestamp_part, sender = pre_text.strip('[]').split(']')
+                        # Split timestamp into time and date
+                        time, date = timestamp_part.split(', ')
+                        message_data['time'] = time.strip()
+                        message_data['timestamp'] = date.strip()
+                        message_data['sender'] = sender.strip(': ')
+                    except (ValueError, IndexError):
+                        pass
+                        
+                # Get message text
+                message_span = copyable_text.find('span', {'class': 'selectable-text'})
+                if message_span:
+                    message_data['message'] = message_span.get_text(strip=True)
+            
+            structured_messages.append(message_data)
+        
+        # Print formatted JSON
+        print(json.dumps(structured_messages, indent=2, ensure_ascii=False))
+
     def send_messages(self, message: str) -> None:
         """
         Send a message to open chat.
@@ -181,6 +244,20 @@ class WhatsBot:
             message_input.send_keys(Keys.SHIFT + Keys.ENTER)
 
         message_input.send_keys(Keys.ENTER)
+
+    def load_more_messages(self) -> bool:
+        """
+        Clicks the 'Load More Messages' button if available.
+
+        Returns:
+            bool: True if more messages were loaded, False if button not found
+        """
+        load_more = self.find_element("load_more_messages")
+        if load_more:
+            load_more.click()
+            time.sleep(self.threshold['default'])
+            return True
+        return False
 
 
 def opendriver(headless: bool=True) -> webdriver:

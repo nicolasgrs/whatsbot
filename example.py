@@ -40,53 +40,96 @@ from bot import WhatsBot
 
 def send_messages_to_contact() -> None:
     """
-    Opens a contact and sends a message in a loop.
+    Opens a contact to send messages or read the last message.
 
-    This function opens a contact and repeatedly sends a message to that contact.
-    The function runs in an infinite loop and does not take any arguments or return any values.
-
-    Note: Use with caution as this function will continuously send messages until manually stopped.
-
-    Args:
-        bot (WhatsBot): WhatsBot object 
+    This function opens a contact and allows the user to:
+    - Send messages repeatedly to that contact (use !end to select another contact)
+    - Read the last message from that contact
+    - Use !quit to exit the program
 
     Example:
         - Open a contact named 'John'
-        - Send a message 'Hello, how are you?' to 'John'
-        - Repeat the above step indefinitely until manually stopped
+        - Choose to send messages or read the last message
+        - If sending: send messages until '!end' is typed to select another contact
+        - If reading: display the last message and return to contact selection
     """
     # Starting a new bot object
     bot = WhatsBot(headless=False)  # set headless to True to hide the webriver
     bot.authenticate()
 
-    # Selecting the contact to talk
-    contact = input("Which contact do you want to open? ")
+    while True:
+        # Selecting the contact to talk
+        contact = input("\nWhich contact do you want to open? (!quit to exit) ")
 
-    # Checking if contact exists
-    if bot.open_contact(contact):
-        
-        # Infinity loop for send message
-        while True:
-            message = input("Type your message (Type !quit to exit) ")
+        # Exit program if user types !quit
+        if contact.lower() == '!quit':
+            break
 
-            # quit the program
-            if message == '!quit':
-                bot.quit_driver()
-                break
+        # Checking if contact exists
+        if bot.open_contact(contact):
+            print("\nSelect an action:")
+            print("1. Send messages")
+            print("2. Read last message")
+            print("3. Read message block")
+            option = input("Option: ")
 
-            # Send the message
-            bot.send_messages(message)
-    else:
-        # if application does not find the contact
-        print("Contact not found")
+            if option == "1":
+                # Message loop - use !end to select another contact
+                while True:
+                    message = input("Type your message (!end to change contact, !quit to exit) ")
+
+                    # Return to contact selection
+                    if message.lower() == '!end':
+                        break
+                    # Exit program
+                    elif message.lower() == '!quit':
+                        return
+                    # Send the message
+                    bot.send_messages(message)
+            
+            elif option == "2":
+                # Reading last message
+                message = bot.last_message()
+                if message:
+                    print(f"\nLast message from {contact}:")
+                    print(message)
+                else:
+                    print("No messages found")
+                input("\nPress Enter to continue...")
+            
+            elif option == "3":
+                while True:
+                    # Reading message block
+                    messages = bot.message_block()
+                    if messages:
+                        print(f"\nMessage block from chat with {contact}:")
+                        print(messages)
+                    else:
+                        print("No messages found")
+                    
+                    # Ask if user wants to load more messages
+                    load_more = input("\nPress Enter to continue, or type 'more' to load more messages: ")
+                    if load_more.lower() == 'more':
+                        if bot.load_more_messages():
+                            print("Loading more messages...")
+                            continue
+                        else:
+                            print("No more messages available or button not found")
+                            input("Press Enter to continue...")
+                            break
+                    break
+        else:
+            # if application does not find the contact
+            print("Contact not found")
+    
+    # Close the driver when done
+    bot.quit_driver()
 
 
 def main():
     """
     This code has some examples of how to use the bot.
-
     """
-    # Starts the first example
     send_messages_to_contact()
 
 

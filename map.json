@@ -21,11 +21,19 @@
     },
     "last_message": {
         "type": "xpath",
-        "value": "//div[@role='listitem'][last()]//span[contains(@class, 'x1iyjqo2')][last()]"
+        "value": "(//div[contains(@class, 'x9f619')]//span[contains(@class, 'selectable-text')])[last()]"
     },
     "message_input": {
         "type": "xpath",
         "value": "//div[@contenteditable='true'][@aria-placeholder='Escribe un mensaje']"
     }
-
+    ,
+    "load_more_messages": {
+        "type": "xpath",
+        "value": "/html/body/div[1]/div/div/div[3]/div/div[4]/div/div[3]/div/div[2]/div[2]/button"
+    },
+    "message_block": {
+        "type": "xpath",
+        "value": "//*[@id=\"main\"]"
+    }
 }
